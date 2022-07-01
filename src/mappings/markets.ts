@@ -123,7 +123,7 @@ export function createMarket(marketAddress: string): Market {
     // It is all other CERC20 contracts
   } else {
     market = new Market(marketAddress)
-    const underlying = contract.try_underlying()
+    let underlying = contract.try_underlying()
     if (!underlying.reverted) {
       market.underlyingAddress = underlying.value
       let underlyingContract = ERC20.bind(market.underlyingAddress as Address)
