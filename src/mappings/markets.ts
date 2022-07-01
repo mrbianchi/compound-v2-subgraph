@@ -123,20 +123,25 @@ export function createMarket(marketAddress: string): Market {
     // It is all other CERC20 contracts
   } else {
     market = new Market(marketAddress)
-    market.underlyingAddress = contract.underlying()
-    let underlyingContract = ERC20.bind(market.underlyingAddress as Address)
-    market.underlyingDecimals = underlyingContract.decimals()
-    if (market.underlyingAddress.toHexString() != daiAddress) {
-      market.underlyingName = underlyingContract.name()
-      market.underlyingSymbol = underlyingContract.symbol()
+    const underlying = contract.try_underlying()
+    if (!underlying.reverted) {
+      market.underlyingAddress = underlying.value
+      let underlyingContract = ERC20.bind(market.underlyingAddress as Address)
+      market.underlyingDecimals = underlyingContract.decimals()
+      if (market.underlyingAddress.toHexString() != daiAddress) {
+        market.underlyingName = underlyingContract.name()
+        market.underlyingSymbol = underlyingContract.symbol()
+      } else {
+        market.underlyingName = 'Dai Stablecoin v1.0 (DAI)'
+        market.underlyingSymbol = 'DAI'
+      }
+      market.underlyingPriceUSD = zeroBD
+      market.underlyingPrice = zeroBD
+      if (marketAddress == cUSDCAddress) {
+        market.underlyingPriceUSD = BigDecimal.fromString('1')
+      }
     } else {
-      market.underlyingName = 'Dai Stablecoin v1.0 (DAI)'
-      market.underlyingSymbol = 'DAI'
-    }
-    market.underlyingPriceUSD = zeroBD
-    market.underlyingPrice = zeroBD
-    if (marketAddress == cUSDCAddress) {
-      market.underlyingPriceUSD = BigDecimal.fromString('1')
+      //todo: fix this gap
     }
   }
 
